@@ -1,98 +1,104 @@
-# SO2-2026-SISTEMA_MONITOREO_INFRAESTRUCTURA_TI
-## 1. Descripción del proyecto
+SO2-2026-HIPERCONVERGENCIA_PROXMOX_HA
+1. Descripción del proyecto
 
-El Sistema de Monitoreo de Infraestructura TI busca centralizar la supervisión de dispositivos de una red y detectar fallas con mayor rapidez.
+El proyecto implementa un clúster hiperconvergente de Proxmox VE con alta disponibilidad (HA), para que los servicios de una infraestructura sobrevivan a la caída de un servidor.
 
-Actualmente, las fallas pueden descubrirse cuando un usuario informa que un equipo perdió la conexión. Esto retrasa el diagnóstico y no siempre permite conocer cuándo comenzó una interrupción ni cuánto tiempo duró.
+Actualmente, cuando un único servidor de virtualización se apaga o se daña, todas las máquinas virtuales que aloja dejan de funcionar y alguien debe restaurarlas a mano. Esto provoca interrupciones largas, dependencia de una persona concreta y pérdida de los datos posteriores al último respaldo.
 
-El sistema permitirá consultar el estado de los dispositivos desde un dashboard web y conservar un historial de sus caídas y recuperaciones.
+El clúster replicará las máquinas virtuales entre dos nodos y, si un nodo falla, el gestor HA reiniciará la máquina protegida en el otro nodo de forma automática. La recuperación toma minutos y no es instantánea: la máquina se reinicia desde la última réplica.
 
-## 2. Objetivo general
+2. Objetivo general
 
-Desarrollar un sistema web que centralice y automatice el monitoreo de la disponibilidad y el rendimiento de los dispositivos de una infraestructura TI.
+Implementar un clúster hiperconvergente de Proxmox VE con alta disponibilidad, en el que las máquinas virtuales se repliquen entre nodos y se reinicien automáticamente en otro nodo cuando uno falle.
 
-## 3. Alcance del MVP
+3. Alcance del MVP
 
-La primera versión prioriza las funcionalidades necesarias para detectar y registrar fallas:
+La primera versión prioriza lo necesario para demostrar la recuperación automática ante la caída de un nodo:
 
-- Registrar, editar, consultar y eliminar dispositivos.
-- Validar las direcciones IP y evitar duplicados.
-- Comprobar periódicamente la disponibilidad mediante ICMP/Ping.
-- Mostrar el estado en línea o fuera de línea, la latencia y la pérdida de paquetes.
-- Registrar las caídas y recuperaciones con fecha y hora.
-- Mostrar los dispositivos en un dashboard web que se actualice automáticamente.
-- Generar alertas visibles para el administrador.
-- Proteger el acceso mediante autenticación y permisos básicos.
+Dos nodos Proxmox VE anidados dentro de un mismo equipo físico, formando un clúster.
+QDevice (dispositivo de quórum externo) para mantener el quórum con dos nodos.
+Almacenamiento ZFS con replicación periódica de una máquina de prueba (Alpine Linux).
+Esa máquina registrada como recurso HA.
+Una página web simple (nginx) dentro de la máquina, que muestra la hora y su tiempo encendida.
+Migración en vivo manual entre los nodos.
+Pruebas de caída y recuperación de un nodo, con medición de tiempos.
 
-**Criterio principal de éxito:** detectar una caída en menos de un minuto, generar una alerta, actualizar el dashboard y guardar el evento de caída y recuperación.
+Criterio principal de éxito: al apagar de forma abrupta el nodo que ejecuta la máquina protegida, ella se inicia sola en el otro nodo en menos de 3 minutos (valor a confirmar con las mediciones) y el servicio web vuelve a responder.
 
-## 4. Funcionalidades complementarias
+4. Funcionalidades complementarias
 
-SNMP para consultar interfaces y tráfico, reportes avanzados y gráficos adicionales se incorporarán solo si el tiempo y la validación técnica lo permiten. Las aplicaciones móviles y las notificaciones por servicios externos quedan fuera del MVP.
+La base de datos de latidos para comprobar la persistencia de los datos, la prueba ampliada con VPN entre los equipos de los integrantes, Ceph como almacenamiento sincrónico, un dashboard propio y las notificaciones de eventos HA se incorporarán solo si el tiempo y la validación técnica lo permiten.
 
-## 5. Tecnologías y entorno
+5. Tecnologías y entorno
+Virtualización: Proxmox VE (KVM y contenedores LXC), con virtualización anidada.
+Clúster y quórum: Corosync y QDevice (corosync-qnetd).
+Almacenamiento y replicación: ZFS y replicación de Proxmox.
+Alta disponibilidad: gestor HA de Proxmox, con watchdog.
+Servicio de demostración: Alpine Linux y nginx.
+Base de datos de demostración (complementaria): SQLite, propuesta.
+Control de versiones y respaldo: Git y GitHub.
+Máquina	Sistema operativo	Rol
+Anfitrión	Proxmox VE	Aloja las máquinas del laboratorio; no forma parte del clúster.
+nodo-1	Proxmox VE (anidado)	Nodo del clúster.
+nodo-2	Proxmox VE (anidado)	Nodo del clúster.
+qdevice	Debian o Alpine mínima	Aporta el tercer voto de quórum.
+web-ha	Alpine Linux	Máquina protegida por HA con el servicio web.
 
-- Lenguaje y plataforma: C# y .NET 10.
-- Interfaz web: ASP.NET Core.
-- Monitoreo de disponibilidad: ICMP/Ping.
-- Monitoreo complementario: SNMP, sujeto a validación.
-- Entorno de pruebas: servidor Proxmox y máquinas virtuales Linux.
-- Control de versiones y respaldo: Git y GitHub.
+El intervalo de replicación, el tiempo máximo de recuperación aceptable y la tecnología de la base de datos de demostración deben documentarse cuando el equipo cierre esas decisiones.
 
-La tecnología concreta de base de datos y el mecanismo de actualización del dashboard deben documentarse cuando el equipo cierre esas decisiones.
-
-## 6. Equipo y responsabilidades
-
-- **Edilson Lazarte García:** análisis, requisitos, coordinación y documentación.
-- **Josías Gabriel Arze Giron:** lógica de monitoreo, ICMP/SNMP, procesamiento de datos y alertas.
-- **Luis Fernando Callejas:** interfaz, dashboard, datos y pruebas de usabilidad.
+6. Equipo y responsabilidades
+Edilson Lazarte García: análisis, requisitos, topología, coordinación y documentación.
+Josías Gabriel Arze Giron: infraestructura, nodos anidados, clúster, QDevice y alta disponibilidad.
+Luis Fernando Callejas: almacenamiento ZFS, replicación, servicio de demostración y pruebas de fallo.
 
 El equipo coordina los avances y los bloqueos en una reunión semanal.
 
-## 7. Plan de trabajo
+7. Plan de trabajo
 
-El proyecto se organiza en análisis, diseño, desarrollo, pruebas y documentación. El Gantt contempla 240 horas estimadas y una entrega prevista para noviembre de 2026.
+El proyecto se organiza en análisis, diseño, implementación, pruebas y documentación. El Gantt contempla 160 horas estimadas y una entrega final prevista para el 18 de diciembre de 2026.
 
 Orden de trabajo recomendado:
 
-1. Confirmar requisitos, arquitectura y estructura de datos.
-2. Verificar el entorno de pruebas y la conectividad.
-3. Implementar y probar el monitoreo ICMP.
-4. Integrar la persistencia del historial y las alertas.
-5. Desarrollar el dashboard y la autenticación.
-6. Ejecutar pruebas integrales y corregir errores.
-7. Preparar la documentación y la demostración final.
-8. Validar SNMP y otras mejoras sin bloquear el MVP.
+Confirmar requisitos, topología (nombres de nodo, direcciones IP y RAM) y diseño.
+Verificar la virtualización anidada y el entorno base.
+Crear los nodos Proxmox anidados y formar el clúster.
+Configurar el QDevice y verificar el quórum.
+Configurar ZFS y la replicación.
+Configurar HA con la máquina de prueba y el servicio web.
+Ejecutar las pruebas de fallo y recuperación, y registrar los tiempos.
+Preparar la documentación y la demostración final.
+Validar las mejoras (VPN, base de datos, Ceph) sin bloquear el MVP.
+8. Preparación del entorno
 
-## 8. Preparación del entorno
+Antes de trabajar, cada integrante debe:
 
-Antes de desarrollar, cada integrante debe:
+Instalar Git.
+Clonar el repositorio.
+Confirmar el acceso al panel web (puerto 8006) y al SSH del anfitrión Proxmox.
+Verificar que la virtualización anidada esté activa en el anfitrión.
+Revisar los requisitos, el Gantt y las tareas asignadas.
+Consultar al equipo antes de cambiar nombres de nodo, direcciones IP o almacenamiento, porque no se pueden modificar después de formar el clúster.
 
-1. Instalar Git y el SDK de .NET 10.
-2. Clonar el repositorio.
-3. Confirmar el acceso al servidor Proxmox o al entorno de pruebas acordado.
-4. Verificar la conectividad con los dispositivos de prueba.
-5. Revisar los requisitos, el Gantt y las tareas asignadas.
-6. Consultar al equipo antes de cambiar decisiones compartidas de arquitectura o datos.
+Los comandos exactos para crear los nodos, el clúster, el QDevice, ZFS, la replicación y HA se añadirán a la documentación a medida que se ejecuten.
 
-Los comandos exactos para compilar, ejecutar y probar se añadirán cuando estén creados los proyectos y se haya definido su estructura.
-
-## 9. Criterios de aceptación
+9. Criterios de aceptación
 
 La versión se considerará preparada para la demostración cuando:
 
-- Se puedan registrar y administrar dispositivos.
-- El sistema detecte una caída en menos de un minuto en el entorno de prueba.
-- El dashboard muestre al menos cinco dispositivos y se actualice sin recargar la página.
-- Se genere una alerta visible al producirse una caída.
-- El historial registre las caídas y recuperaciones con fecha y hora.
-- Se pueda consultar la latencia y contrastarla con el comando `ping`.
-- Las funciones protegidas requieran iniciar sesión.
-- La demostración se ejecute en el entorno Proxmox del laboratorio.
+El panel Datacenter muestre los dos nodos en línea y el quórum activo con el voto del QDevice.
+La máquina de prueba aparezca replicada en el segundo nodo con sincronizaciones dentro del intervalo configurado.
+La migración en vivo cambie la máquina de nodo y el servicio siga respondiendo.
+Al apagar el nodo que ejecuta la máquina, ella se inicie sola en el otro en menos de 3 minutos.
+La página web responda tras el reinicio y su tiempo encendida vuelva a cero.
+Al encender de nuevo el nodo caído, el clúster recupere su estado normal sin máquinas duplicadas.
+La demostración se ejecute en el entorno Proxmox del laboratorio.
+10. Gestión del proyecto
 
-## 10. Gestión del proyecto
+Los scripts, las configuraciones y los cambios deben respaldarse en GitHub. Los bloqueos, las decisiones técnicas y las tareas pendientes se revisarán semanalmente. Si una funcionalidad complementaria pone en riesgo la entrega, se priorizará el alcance del MVP.
 
-El código y los cambios deben respaldarse en GitHub. Los bloqueos, las decisiones técnicas y las tareas pendientes se revisarán semanalmente. Si una funcionalidad complementaria pone en riesgo la entrega, se priorizará el alcance del MVP.
+11. Documentación
+
+La carpeta documentacion/ contiene las presentaciones, el cuestionario de aprobación y el diagrama de Gantt del proyecto. Antes de la entrega final, se actualizará con las decisiones técnicas, la guía de instalación paso a paso, los tiempos de recuperación medidos y las limitaciones conocidas.
 
 ## 11. Documentación
 
