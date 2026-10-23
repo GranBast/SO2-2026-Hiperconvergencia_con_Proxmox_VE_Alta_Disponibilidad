@@ -1,5 +1,5 @@
-SO2-2026-HIPERCONVERGENCIA_PROXMOX_HA
-1. Descripción del proyecto
+#SO2-2026-HIPERCONVERGENCIA_PROXMOX_HA
+##1. Descripción del proyecto
 
 El proyecto implementa un clúster hiperconvergente de Proxmox VE con alta disponibilidad (HA), para que los servicios de una infraestructura sobrevivan a la caída de un servidor.
 
@@ -7,11 +7,11 @@ Actualmente, cuando un único servidor de virtualización se apaga o se daña, t
 
 El clúster replicará las máquinas virtuales entre dos nodos y, si un nodo falla, el gestor HA reiniciará la máquina protegida en el otro nodo de forma automática. La recuperación toma minutos y no es instantánea: la máquina se reinicia desde la última réplica.
 
-2. Objetivo general
+##2. Objetivo general
 
 Implementar un clúster hiperconvergente de Proxmox VE con alta disponibilidad, en el que las máquinas virtuales se repliquen entre nodos y se reinicien automáticamente en otro nodo cuando uno falle.
 
-3. Alcance del MVP
+##3. Alcance del MVP
 
 La primera versión prioriza lo necesario para demostrar la recuperación automática ante la caída de un nodo:
 
@@ -25,11 +25,11 @@ Pruebas de caída y recuperación de un nodo, con medición de tiempos.
 
 Criterio principal de éxito: al apagar de forma abrupta el nodo que ejecuta la máquina protegida, ella se inicia sola en el otro nodo en menos de 3 minutos (valor a confirmar con las mediciones) y el servicio web vuelve a responder.
 
-4. Funcionalidades complementarias
+##4. Funcionalidades complementarias
 
 La base de datos de latidos para comprobar la persistencia de los datos, la prueba ampliada con VPN entre los equipos de los integrantes, Ceph como almacenamiento sincrónico, un dashboard propio y las notificaciones de eventos HA se incorporarán solo si el tiempo y la validación técnica lo permiten.
 
-5. Tecnologías y entorno
+##5. Tecnologías y entorno
 Virtualización: Proxmox VE (KVM y contenedores LXC), con virtualización anidada.
 Clúster y quórum: Corosync y QDevice (corosync-qnetd).
 Almacenamiento y replicación: ZFS y replicación de Proxmox.
@@ -46,14 +46,14 @@ web-ha	Alpine Linux	Máquina protegida por HA con el servicio web.
 
 El intervalo de replicación, el tiempo máximo de recuperación aceptable y la tecnología de la base de datos de demostración deben documentarse cuando el equipo cierre esas decisiones.
 
-6. Equipo y responsabilidades
+##6. Equipo y responsabilidades
 Edilson Lazarte García: análisis, requisitos, topología, coordinación y documentación.
 Josías Gabriel Arze Giron: infraestructura, nodos anidados, clúster, QDevice y alta disponibilidad.
 Luis Fernando Callejas: almacenamiento ZFS, replicación, servicio de demostración y pruebas de fallo.
 
 El equipo coordina los avances y los bloqueos en una reunión semanal.
 
-7. Plan de trabajo
+##7. Plan de trabajo
 
 El proyecto se organiza en análisis, diseño, implementación, pruebas y documentación. El Gantt contempla 160 horas estimadas y una entrega final prevista para el 18 de diciembre de 2026.
 
@@ -68,7 +68,7 @@ Configurar HA con la máquina de prueba y el servicio web.
 Ejecutar las pruebas de fallo y recuperación, y registrar los tiempos.
 Preparar la documentación y la demostración final.
 Validar las mejoras (VPN, base de datos, Ceph) sin bloquear el MVP.
-8. Preparación del entorno
+##8. Preparación del entorno
 
 Antes de trabajar, cada integrante debe:
 
@@ -81,7 +81,7 @@ Consultar al equipo antes de cambiar nombres de nodo, direcciones IP o almacenam
 
 Los comandos exactos para crear los nodos, el clúster, el QDevice, ZFS, la replicación y HA se añadirán a la documentación a medida que se ejecuten.
 
-9. Criterios de aceptación
+##9. Criterios de aceptación
 
 La versión se considerará preparada para la demostración cuando:
 
@@ -92,11 +92,11 @@ Al apagar el nodo que ejecuta la máquina, ella se inicie sola en el otro en men
 La página web responda tras el reinicio y su tiempo encendida vuelva a cero.
 Al encender de nuevo el nodo caído, el clúster recupere su estado normal sin máquinas duplicadas.
 La demostración se ejecute en el entorno Proxmox del laboratorio.
-10. Gestión del proyecto
+##10. Gestión del proyecto
 
 Los scripts, las configuraciones y los cambios deben respaldarse en GitHub. Los bloqueos, las decisiones técnicas y las tareas pendientes se revisarán semanalmente. Si una funcionalidad complementaria pone en riesgo la entrega, se priorizará el alcance del MVP.
 
-11. Documentación
+##11. Documentación
 
 La carpeta documentacion/ contiene las presentaciones, el cuestionario de aprobación y el diagrama de Gantt del proyecto. Antes de la entrega final, se actualizará con las decisiones técnicas, la guía de instalación paso a paso, los tiempos de recuperación medidos y las limitaciones conocidas.
 
